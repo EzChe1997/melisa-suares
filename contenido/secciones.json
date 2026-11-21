@@ -78,15 +78,6 @@
         "img/fotos/baile-01.jpg",
         "img/fotos/baile-02.jpg"
       ]
-    },
-    {
-      "titulo": "Titulo de prueba",
-      "subtitulo": "Un paisaje chill de testeo",
-      "portada": "/img/fotos/pexels-raulling-29106463.webp",
-      "fotos": [
-        "/img/fotos/pexels-raulling-29231611.webp",
-        "/img/fotos/pexels-raulling-29039487.webp"
-      ]
     }
   ]
 }
