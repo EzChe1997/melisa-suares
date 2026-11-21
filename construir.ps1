@@ -236,6 +236,11 @@ foreach ($info in $fotos.Values) {
   Copy-Item -LiteralPath (Join-Path $Cache "m/$($info.m)") -Destination "$Salida/img/m/"
 }
 [IO.File]::WriteAllText((Join-Path $raiz "$Salida/.nojekyll"), "", $utf8)
+# Para Google: robots.txt y mapa del sitio
+$hoy = (Get-Date).ToString("yyyy-MM-dd")
+$mapa = "<?xml version=`"1.0`" encoding=`"UTF-8`"?>`n<urlset xmlns=`"http://www.sitemaps.org/schemas/sitemap/0.9`">`n  <url><loc>$UrlSitio</loc><lastmod>$hoy</lastmod></url>`n</urlset>`n"
+[IO.File]::WriteAllText((Join-Path $raiz "$Salida/sitemap.xml"), $mapa, $utf8)
+[IO.File]::WriteAllText((Join-Path $raiz "$Salida/robots.txt"), "User-agent: *`nAllow: /`nDisallow: /admin/`n`nSitemap: ${UrlSitio}sitemap.xml`n", $utf8)
 
 $total = 0
 foreach ($l in $listas) { $total += $l.fotos.Count }

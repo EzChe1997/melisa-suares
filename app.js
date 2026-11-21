@@ -27,16 +27,32 @@ menu.querySelectorAll("a").forEach(a => a.addEventListener("click", cerrarMenu))
 // Filtros del portfolio
 const figuras = [...document.querySelectorAll("#galeria figure")];
 const filtros = [...document.querySelectorAll(".filtro")];
+const verMas = document.getElementById("verMas");
+const POR_TANDA = 16;          // cuántas fotos se muestran de entrada y en cada "Ver más"
+let catActual = "todo";
+let mostrando = POR_TANDA;
+let coinciden = figuras;       // fotos del filtro elegido (también las que todavía no se muestran)
+function aplicarFiltro() {
+  coinciden = figuras.filter(f => catActual === "todo" || f.dataset.cat === catActual);
+  figuras.forEach(f => { f.hidden = true; });
+  coinciden.forEach((f, i) => { f.hidden = i >= mostrando; });
+  const quedan = Math.max(0, coinciden.length - mostrando);
+  verMas.hidden = quedan === 0;
+  verMas.textContent = `Ver más fotos (${quedan})`;
+  emparejarFinal();
+}
 function filtrar(cat) {
   filtros.forEach(b => {
     const activo = b.dataset.filtro === cat;
     b.classList.toggle("activo", activo);
     b.setAttribute("aria-selected", String(activo));
   });
-  figuras.forEach(f => { f.hidden = cat !== "todo" && f.dataset.cat !== cat; });
-  emparejarFinal();
+  catActual = cat;
+  mostrando = POR_TANDA;
+  aplicarFiltro();
 }
 filtros.forEach(b => b.addEventListener("click", () => filtrar(b.dataset.filtro)));
+verMas.addEventListener("click", () => { mostrando += POR_TANDA; aplicarFiltro(); });
 
 // Las fotos verticales ocupan dos filas. Si una queda al final sin fotos al lado,
 // su segunda fila quedaría casi vacía y se vería como una tira cortada:
@@ -61,7 +77,7 @@ function emparejarFinal() {
 }
 let esperaResize;
 window.addEventListener("resize", () => { clearTimeout(esperaResize); esperaResize = setTimeout(emparejarFinal, 150); });
-emparejarFinal();
+aplicarFiltro();
 
 // Tarjetas de servicios: llevan al portfolio ya filtrado
 document.querySelectorAll("[data-ir]").forEach(a =>
@@ -94,6 +110,7 @@ function precargar(url) {
 
 // dir: 1 = siguiente (entra desde la derecha), -1 = anterior, 0 = sin animación de paso
 function mostrar(i, dir = 0) {
+  quitarZoom();
   actual = (i + visibles.length) % visibles.length;
   const img = visibles[actual].querySelector("img");
   const url = img.dataset.full;
@@ -162,7 +179,8 @@ function mostrar(i, dir = 0) {
   }, 170);
 }
 function abrirVisor(fig) {
-  visibles = figuras.filter(f => !f.hidden);
+  // en el visor se recorren todas las fotos del filtro, aunque todavía no se hayan desplegado con "Ver más"
+  visibles = coinciden;
   visor.hidden = false;
   document.body.style.overflow = "hidden";
   mostrar(visibles.indexOf(fig));
@@ -175,6 +193,7 @@ function abrirVisor(fig) {
   document.getElementById("visorCerrar").focus();
 }
 function cerrarVisor() {
+  quitarZoom();
   visor.hidden = true;
   document.body.style.overflow = "";
 }
@@ -189,28 +208,122 @@ document.addEventListener("keydown", e => {
   if (e.key === "ArrowLeft") mostrar(actual - 1, -1);
   if (e.key === "ArrowRight") mostrar(actual + 1, 1);
 });
-// Deslizar con el dedo en el celular: la foto sigue al dedo
-let toqueX = null, toqueY = null, horizontal = null;
+// Zoom: clic (PC) o doble toque / pellizcar (celular) para ver la foto en detalle
+let zoom = 1, zx = 0, zy = 0, ultimoToque = 0;
+function limitesZoom() {
+  const w = visorImg.offsetWidth, h = visorImg.offsetHeight;
+  return { mx: Math.max(0, (w * zoom - innerWidth) / 2), my: Math.max(0, (h * zoom - innerHeight) / 2) };
+}
+function aplicarZoom(suave) {
+  const { mx, my } = limitesZoom();
+  zx = Math.max(-mx, Math.min(mx, zx));
+  zy = Math.max(-my, Math.min(my, zy));
+  visorImg.style.transition = suave ? "transform .35s cubic-bezier(.2,.7,.2,1)" : "none";
+  visorImg.style.transform = zoom > 1 ? `translate(${zx}px, ${zy}px) scale(${zoom})` : "";
+  visor.classList.toggle("con-zoom", zoom > 1);
+}
+function quitarZoom() {
+  if (zoom === 1 && !visor.classList.contains("con-zoom")) return;
+  zoom = 1; zx = 0; zy = 0;
+  visorImg.style.transition = "none";
+  visorImg.style.transform = "";
+  visor.classList.remove("con-zoom");
+}
+// cuánto agrandar: hasta ver la foto en su tamaño real (mínimo x2, máximo x4)
+const zoomMaximo = () => Math.min(4, Math.max(2, visorImg.naturalWidth / visorImg.offsetWidth));
+function zoomEnPunto(x, y) {
+  const r = visorImg.getBoundingClientRect();
+  zoom = zoomMaximo();
+  zx = -(x - (r.left + r.width / 2)) * (zoom - 1);
+  zy = -(y - (r.top + r.height / 2)) * (zoom - 1);
+  aplicarZoom(true);
+}
+// en PC, con zoom, mover el mouse recorre la foto
+function seguirRaton(e, suave) {
+  const { mx, my } = limitesZoom();
+  zx = -((e.clientX / innerWidth) * 2 - 1) * mx;
+  zy = -((e.clientY / innerHeight) * 2 - 1) * my;
+  visorImg.style.transition = suave ? "transform .35s cubic-bezier(.2,.7,.2,1)" : "transform .2s ease-out";
+  visorImg.style.transform = `translate(${zx}px, ${zy}px) scale(${zoom})`;
+}
+visorImg.addEventListener("click", e => {
+  if (Date.now() - ultimoToque < 700 || saliendo) return;   // en el celular se usa el doble toque
+  if (zoom > 1) { quitarZoom(); visorImg.style.transition = "transform .35s cubic-bezier(.2,.7,.2,1)"; return; }
+  zoom = zoomMaximo();
+  visor.classList.add("con-zoom");
+  seguirRaton(e, true);
+});
+visor.addEventListener("mousemove", e => { if (zoom > 1 && Date.now() - ultimoToque > 700) seguirRaton(e, false); });
+
+// Gestos en el celular: deslizar para cambiar de foto, doble toque o pellizcar para el zoom
+let toqueX = null, toqueY = null, horizontal = null, modo = null;
+let inicioZoom = 1, inicioDist = 0, inicioZx = 0, inicioZy = 0, tocoAntes = { t: 0, x: 0, y: 0 };
+const distancia = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
 visor.addEventListener("touchstart", e => {
+  ultimoToque = Date.now();
+  if (e.touches.length === 2) {
+    modo = "pellizco";
+    inicioZoom = zoom; inicioDist = distancia(e.touches);
+    visorImg.getAnimations?.().forEach(a => a.cancel());
+    visorImg.style.opacity = "";
+    arrastreX = 0;
+    return;
+  }
+  if (e.touches.length > 2) return;
   toqueX = e.touches[0].clientX;
   toqueY = e.touches[0].clientY;
   horizontal = null;
   arrastreX = 0;
-  visorImg.getAnimations?.().forEach(a => a.cancel());
+  modo = zoom > 1 ? "mover" : "deslizar";
+  inicioZx = zx; inicioZy = zy;
+  if (modo === "deslizar") visorImg.getAnimations?.().forEach(a => a.cancel());
 }, { passive: true });
 visor.addEventListener("touchmove", e => {
+  if (modo === "pellizco" && e.touches.length === 2) {
+    zoom = Math.max(1, Math.min(4, inicioZoom * distancia(e.touches) / inicioDist));
+    aplicarZoom(false);
+    return;
+  }
   if (toqueX === null) return;
   const dx = e.touches[0].clientX - toqueX;
   const dy = e.touches[0].clientY - toqueY;
+  if (modo === "mover") {
+    zx = inicioZx + dx; zy = inicioZy + dy;
+    aplicarZoom(false);
+    return;
+  }
+  if (modo !== "deslizar") return;
   if (horizontal === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) horizontal = Math.abs(dx) > Math.abs(dy);
   if (!horizontal) return;
   arrastreX = dx;
   visorImg.style.transform = `translateX(${dx}px)`;
   visorImg.style.opacity = String(1 - Math.min(Math.abs(dx) / 600, 0.4));
 }, { passive: true });
-visor.addEventListener("touchend", () => {
+visor.addEventListener("touchend", e => {
+  ultimoToque = Date.now();
+  if (modo === "pellizco") {
+    if (e.touches.length) return;            // todavía queda un dedo apoyado
+    modo = null; toqueX = null;
+    if (zoom < 1.15) { zoom = 1; zx = 0; zy = 0; }
+    aplicarZoom(true);
+    return;
+  }
   if (toqueX === null) return;
+  const fin = e.changedTouches[0];
+  const quieto = Math.abs(fin.clientX - toqueX) < 10 && Math.abs(fin.clientY - toqueY) < 10;
   toqueX = null;
+  // doble toque sobre la foto: zoom / quitar zoom
+  if (quieto && e.target === visorImg) {
+    const ahora = Date.now();
+    if (ahora - tocoAntes.t < 320 && Math.hypot(fin.clientX - tocoAntes.x, fin.clientY - tocoAntes.y) < 40) {
+      tocoAntes.t = 0;
+      if (zoom > 1) { zoom = 1; zx = 0; zy = 0; aplicarZoom(true); }
+      else zoomEnPunto(fin.clientX, fin.clientY);
+      return;
+    }
+    tocoAntes = { t: ahora, x: fin.clientX, y: fin.clientY };
+  }
+  if (modo === "mover") return;
   visorImg.style.opacity = "";
   if (horizontal && Math.abs(arrastreX) > 60) {
     const dir = arrastreX < 0 ? 1 : -1;
