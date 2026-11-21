@@ -81,7 +81,9 @@
     },
     {
       "titulo": "Titulo de prueba",
-      "subtitulo": "Un paisaje chill de testeo"
+      "subtitulo": "Un paisaje chill de testeo",
+      "portada": "/img/fotos/pexels-raulling-29106463.webp",
+      "fotos": []
     }
   ]
 }
