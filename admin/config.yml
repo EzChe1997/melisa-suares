@@ -1,0 +1,90 @@
+# Panel de edición (Sveltia CMS). Se abre en https://ezche1997.github.io/melisa-suares/admin/
+backend:
+  name: github
+  repo: EzChe1997/melisa-suares
+  branch: main
+  commit_messages:
+    update: "Actualizar {{path}} (desde el panel)"
+    uploadMedia: "Subir {{path}} (desde el panel)"
+    deleteMedia: "Borrar {{path}} (desde el panel)"
+
+media_folder: img/fotos
+public_folder: img/fotos
+
+# Antes de subir, el panel achica cada foto a 3000 px como máximo y la guarda en WebP calidad 90
+# (a esa calidad no se nota diferencia con el original). Así se pueden subir los archivos
+# directo de la cámara, sin exportarlos antes.
+media_libraries:
+  default:
+    config:
+      transformations:
+        raster_image:
+          format: webp
+          quality: 90
+          width: 3000
+          height: 3000
+
+collections:
+  - name: pagina
+    label: Contenido de la página
+    files:
+      - name: secciones
+        label: Secciones y fotos
+        file: contenido/secciones.json
+        format: json
+        fields:
+          - name: secciones
+            label: Secciones
+            label_singular: Sección
+            hint: "Cada sección aparece en Servicios, en los filtros del Portfolio y en el formulario. El orden de la lista es el orden en la página."
+            widget: list
+            summary: "{{fields.titulo}}"
+            fields:
+              - { name: titulo, label: Título, widget: string }
+              - { name: subtitulo, label: "Subtítulo (texto corto debajo del título)", widget: string, required: false }
+              - name: portada
+                label: Foto de la tarjeta en Servicios
+                hint: "Si la dejás vacía, se usa la primera foto de la sección."
+                widget: image
+                required: false
+              - name: fotos
+                label: Fotos
+                hint: "Podés subir varias juntas, del tamaño que sean. Arrastralas para cambiar el orden."
+                widget: image
+                multiple: true
+                required: false
+
+      - name: sitio
+        label: Portada, Sobre mí y contacto
+        file: contenido/sitio.json
+        format: json
+        fields:
+          - name: portada
+            label: Portada (lo primero que se ve)
+            widget: object
+            fields:
+              - { name: foto, label: Foto de fondo, widget: image }
+              - { name: descripcion_foto, label: "Descripción de la foto (para Google)", widget: string, required: false }
+              - { name: sobretitulo, label: Texto chico de arriba, widget: string, required: false }
+              - { name: titulo, label: Título, widget: string }
+              - { name: titulo_destacado, label: "Segunda línea del título (en dorado)", widget: string, required: false }
+              - { name: subtitulo, label: Texto debajo del título, widget: string, required: false }
+          - name: sobre_mi
+            label: Sobre mí
+            widget: object
+            fields:
+              - { name: foto, label: Tu foto, widget: image }
+              - { name: titulo, label: Título, widget: string }
+              - { name: texto, label: Texto, widget: text, hint: "Dejá una línea en blanco para separar párrafos." }
+          - name: otros_eventos
+            label: Tarjeta de otros eventos (en Servicios)
+            widget: object
+            fields:
+              - { name: titulo, label: Título, widget: string }
+              - { name: texto, label: Texto, widget: string, required: false }
+          - name: contacto
+            label: Contacto
+            widget: object
+            fields:
+              - { name: whatsapp, label: WhatsApp, widget: string, hint: "Con código de país, sin + ni espacios. Ej: 5491173629233" }
+              - { name: instagram, label: "Usuario de Instagram (sin @)", widget: string }

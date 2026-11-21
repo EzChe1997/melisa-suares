@@ -75,14 +75,19 @@ function Get-Foto($rel) {
     return $null
   }
   $hash = (Get-FileHash -LiteralPath $src -Algorithm SHA1).Hash.Substring(0, 10).ToLowerInvariant()
-  $archivo = (Get-Slug ([IO.Path]::GetFileNameWithoutExtension($rel))) + "-" + $hash + ".jpg"
-  $g = Join-Path $Cache "g/$archivo"
-  $m = Join-Path $Cache "m/$archivo"
+  $base = (Get-Slug ([IO.Path]::GetFileNameWithoutExtension($rel))) + "-" + $hash
+  $ext = [IO.Path]::GetExtension($rel).ToLowerInvariant()
+  if ($ext -eq ".jpeg") { $ext = ".jpg" }
+  # JPG y WebP que ya miden hasta $MaxGrande se publican tal cual (sin recomprimir)
+  $orig = Get-Medidas $src
+  $talCual = ([Math]::Max($orig.w, $orig.h) -le $MaxGrande) -and ($ext -eq ".jpg" -or $ext -eq ".webp")
+  if ($talCual) { $archivoG = "$base$ext" } else { $archivoG = "$base.jpg" }
+  $archivoM = "$base.jpg"
+  $g = Join-Path $Cache "g/$archivoG"
+  $m = Join-Path $Cache "m/$archivoM"
 
   if (-not (Test-Path -LiteralPath $g)) {
-    $orig = Get-Medidas $src
-    $ext = [IO.Path]::GetExtension($rel).ToLowerInvariant()
-    if ([Math]::Max($orig.w, $orig.h) -le $MaxGrande -and ($ext -eq ".jpg" -or $ext -eq ".jpeg")) {
+    if ($talCual) {
       Copy-Item -LiteralPath $src -Destination $g
     } else {
       $f = "scale=w='if(gt(iw,ih),min($MaxGrande,iw),-2)':h='if(gt(iw,ih),-2,min($MaxGrande,ih))':flags=lanczos"
@@ -95,7 +100,7 @@ function Get-Foto($rel) {
     & $ffmpeg -y -loglevel error -i $g -vf $f -q:v 2 $m
   }
   $med = Get-Medidas $m
-  $info = @{ archivo = $archivo; w = $med.w; h = $med.h; alta = ($med.h -gt $med.w) }
+  $info = @{ g = $archivoG; m = $archivoM; w = $med.w; h = $med.h; alta = ($med.h -gt $med.w) }
   $fotos[$rel] = $info
   $info
 }
@@ -134,7 +139,7 @@ foreach ($s in $secciones) {
   $listas += , @{ id = $id; titulo = [string]$s.titulo; fotos = $lista }
 
   [void]$servicios.AppendLine("      <a class=""servicio"" href=""#portfolio"" data-ir=""$id"">")
-  [void]$servicios.AppendLine("        <img src=""img/m/$($portada.archivo)"" alt="""" loading=""lazy"">")
+  [void]$servicios.AppendLine("        <img src=""img/m/$($portada.m)"" alt="""" loading=""lazy"">")
   [void]$servicios.AppendLine("        <div><h3>$(Esc $s.titulo)</h3><p>$(Esc $s.subtitulo)</p></div>")
   [void]$servicios.AppendLine("      </a>")
   if ($lista.Count -gt 0) {
@@ -162,7 +167,7 @@ for ($i = 0; $i -lt $max; $i++) {
     $clase = ""
     if ($f.alta) { $clase = " class=""alta""" }
     $alt = Esc ("$($l.titulo), foto $($i + 1)")
-    [void]$galeria.AppendLine("      <figure data-cat=""$($l.id)""$clase><img src=""img/m/$($f.archivo)"" data-full=""img/g/$($f.archivo)"" alt=""$alt"" loading=""lazy"" width=""$($f.w)"" height=""$($f.h)""></figure>")
+    [void]$galeria.AppendLine("      <figure data-cat=""$($l.id)""$clase><img src=""img/m/$($f.m)"" data-full=""img/g/$($f.g)"" alt=""$alt"" loading=""lazy"" width=""$($f.w)"" height=""$($f.h)""></figure>")
   }
 }
 
@@ -195,8 +200,8 @@ $instagram = ([string]$sitio.contacto.instagram).Trim().TrimStart('@')
 
 $reemplazos = [ordered]@{
   "{{DESCRIPCION}}"          = (Esc $desc)
-  "{{OG_IMAGEN}}"            = "$($UrlSitio)img/g/$($hero.archivo)"
-  "{{PORTADA_FOTO}}"         = "img/g/$($hero.archivo)"
+  "{{OG_IMAGEN}}"            = "$($UrlSitio)img/g/$($hero.g)"
+  "{{PORTADA_FOTO}}"         = "img/g/$($hero.g)"
   "{{PORTADA_ALT}}"          = (Esc $sitio.portada.descripcion_foto)
   "{{PORTADA_SOBRETITULO}}"  = (Esc $sitio.portada.sobretitulo)
   "{{PORTADA_TITULO}}"       = (Esc $sitio.portada.titulo)
@@ -205,7 +210,7 @@ $reemplazos = [ordered]@{
   "{{SERVICIOS}}"            = $servicios.ToString().TrimEnd()
   "{{FILTROS}}"              = $filtros.ToString().TrimEnd()
   "{{GALERIA}}"              = $galeria.ToString().TrimEnd()
-  "{{SOBRE_FOTO}}"           = "img/g/$($sobre.archivo)"
+  "{{SOBRE_FOTO}}"           = "img/g/$($sobre.g)"
   "{{SOBRE_TITULO}}"         = (Esc $sitio.sobre_mi.titulo)
   "{{SOBRE_TEXTO}}"          = $parrafos.ToString().TrimEnd()
   "{{OPCIONES_EVENTO}}"      = $opciones.ToString().TrimEnd()
@@ -224,10 +229,11 @@ foreach ($d in @("$Salida/img/g", "$Salida/img/m")) { New-Item -ItemType Directo
 [IO.File]::WriteAllText((Join-Path $raiz "$Salida/index.html"), $html, $utf8)
 Copy-Item estilos.css, app.js -Destination $Salida
 Copy-Item img/firma.png -Destination "$Salida/img/"
+Copy-Item admin -Destination $Salida -Recurse
 foreach ($info in $fotos.Values) {
   if (-not $info) { continue }
-  Copy-Item -LiteralPath (Join-Path $Cache "g/$($info.archivo)") -Destination "$Salida/img/g/"
-  Copy-Item -LiteralPath (Join-Path $Cache "m/$($info.archivo)") -Destination "$Salida/img/m/"
+  Copy-Item -LiteralPath (Join-Path $Cache "g/$($info.g)") -Destination "$Salida/img/g/"
+  Copy-Item -LiteralPath (Join-Path $Cache "m/$($info.m)") -Destination "$Salida/img/m/"
 }
 [IO.File]::WriteAllText((Join-Path $raiz "$Salida/.nojekyll"), "", $utf8)
 
