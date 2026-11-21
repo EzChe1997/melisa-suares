@@ -11,7 +11,7 @@ Todo el contenido se maneja desde el panel **https://melisasuares.github.io/admi
 Al guardar, GitHub arma y publica la página sola en 1 o 2 minutos (pestaña *Actions* del repositorio).
 
 ## Cómo está armado
-- `contenido/secciones.json` y `contenido/sitio.json`: el contenido (lo que edita Pages CMS).
+- `contenido/secciones.json` y `contenido/sitio.json`: el contenido (lo que edita el panel).
 - `img/fotos/`: las fotos tal como se subieron.
 - `plantilla.html`, `estilos.css`, `app.js`: diseño y funcionamiento.
 - `construir.ps1`: arma la página en `_site/`. Copia cada foto sin recomprimir si mide hasta 3000 px (si es más grande la achica a 3000 px) y genera miniaturas nítidas para la grilla. Detecta solo si la foto es vertical u horizontal.
