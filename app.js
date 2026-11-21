@@ -34,8 +34,34 @@ function filtrar(cat) {
     b.setAttribute("aria-selected", String(activo));
   });
   figuras.forEach(f => { f.hidden = cat !== "todo" && f.dataset.cat !== cat; });
+  emparejarFinal();
 }
 filtros.forEach(b => b.addEventListener("click", () => filtrar(b.dataset.filtro)));
+
+// Las fotos verticales ocupan dos filas. Si una queda al final sin fotos al lado,
+// su segunda fila quedaría casi vacía y se vería como una tira cortada:
+// en ese caso se muestra del tamaño normal, así la galería termina prolija.
+const galeria = document.getElementById("galeria");
+function emparejarFinal() {
+  // cada fila mide lo mismo que una foto horizontal (3:2), así ninguna fila queda aplastada
+  const cs = getComputedStyle(galeria);
+  const columnas = cs.gridTemplateColumns.split(" ").length;
+  const hueco = parseFloat(cs.columnGap) || 0;
+  const ancho = (galeria.clientWidth - hueco * (columnas - 1)) / columnas;
+  galeria.style.gridAutoRows = `${(ancho * 2 / 3).toFixed(2)}px`;
+  figuras.forEach(f => f.classList.remove("alta-corta"));
+  for (let vuelta = 0; vuelta < 6; vuelta++) {
+    const visibles = figuras.filter(f => !f.hidden);
+    const esAlta = f => f.classList.contains("alta") && !f.classList.contains("alta-corta");
+    const fondo = Math.max(0, ...visibles.filter(f => !esAlta(f)).map(f => f.getBoundingClientRect().bottom));
+    const sobran = visibles.filter(f => esAlta(f) && f.getBoundingClientRect().bottom > fondo + 2);
+    if (!sobran.length) break;
+    sobran.forEach(f => f.classList.add("alta-corta"));
+  }
+}
+let esperaResize;
+window.addEventListener("resize", () => { clearTimeout(esperaResize); esperaResize = setTimeout(emparejarFinal, 150); });
+emparejarFinal();
 
 // Tarjetas de servicios: llevan al portfolio ya filtrado
 document.querySelectorAll("[data-ir]").forEach(a =>
