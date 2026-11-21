@@ -1,7 +1,7 @@
-# Panel de edición (Sveltia CMS). Se abre en https://melisasuares.github.io/admin/
+# Panel de edición (Sveltia CMS). Se abre en https://melisasuaresph.github.io/admin/
 backend:
   name: github
-  repo: melisasuares/melisasuares.github.io
+  repo: melisasuaresph/melisasuaresph.github.io
   branch: main
   commit_messages:
     update: "Actualizar {{path}} (desde el panel)"

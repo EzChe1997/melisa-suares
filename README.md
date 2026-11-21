@@ -1,9 +1,9 @@
-# Melisa Suares · Fotografía y Video
+# Melisa Suares ph · Fotografía y Video
 
-Página: https://melisasuares.github.io/
+Página: https://melisasuaresph.github.io/
 
 ## Cómo se edita
-Todo el contenido se maneja desde el panel **https://melisasuares.github.io/admin/** (Sveltia CMS), entrando con un token de GitHub ("Iniciar sesión con un token de acceso"). Las fotos se pueden subir del tamaño que sean: el panel las achica a 3000 px antes de subirlas.
+Todo el contenido se maneja desde el panel **https://melisasuaresph.github.io/admin/** (Sveltia CMS), entrando con un token de GitHub ("Iniciar sesión con un token de acceso"). Las fotos se pueden subir del tamaño que sean: el panel las achica a 3000 px antes de subirlas.
 
 - **Secciones y fotos**: crear, renombrar, ordenar o borrar secciones; subir fotos (varias a la vez), ordenarlas y elegir la foto de portada de cada una.
 - **Portada, Sobre mí y contacto**: textos y fotos de la portada y de "Sobre mí", WhatsApp e Instagram.
