@@ -108,7 +108,7 @@ em { font-style: italic; color: var(--dorado); }
   object-position: 40% 40%;
   animation: acercar 18s ease-out forwards;
 }
-@keyframes acercar { from { transform: scale(1.08); } to { transform: scale(1); } }
+@keyframes acercar { from { transform: scale(1.04); } to { transform: scale(1); } }
 .hero-velo {
   position: absolute; inset: 0;
   background:
