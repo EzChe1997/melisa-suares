@@ -344,8 +344,15 @@ visor.addEventListener("touchend", e => {
 const visorVideo = document.getElementById("visorVideo");
 const videoFrame = document.getElementById("videoFrame");
 let botonVideo = null;
+// En el celular, el reproductor de Drive dentro de la página se ve mal (controles diminutos):
+// ahí el video se abre directo en Drive (la app, si está instalada) a pantalla completa.
+const esCelular = () => window.matchMedia("(hover: none), (max-width: 760px)").matches;
 function abrirVideo(b) {
   const id = encodeURIComponent(b.dataset.id);
+  if (b.dataset.tipo === "drive" && esCelular()) {
+    window.open(`https://drive.google.com/file/d/${id}/view`, "_blank", "noopener");
+    return;
+  }
   videoFrame.src = b.dataset.tipo === "youtube"
     ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1`
     : `https://drive.google.com/file/d/${id}/preview`;
