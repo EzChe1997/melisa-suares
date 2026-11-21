@@ -78,6 +78,10 @@
         "img/fotos/baile-01.jpg",
         "img/fotos/baile-02.jpg"
       ]
+    },
+    {
+      "titulo": "Titulo de prueba",
+      "subtitulo": "Un paisaje chill de testeo"
     }
   ]
 }
