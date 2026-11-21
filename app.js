@@ -340,6 +340,33 @@ visor.addEventListener("touchend", e => {
   }
 });
 
+// Videos: se abren en un reproductor encima de la página (Google Drive o YouTube)
+const visorVideo = document.getElementById("visorVideo");
+const videoFrame = document.getElementById("videoFrame");
+let botonVideo = null;
+function abrirVideo(b) {
+  const id = encodeURIComponent(b.dataset.id);
+  videoFrame.src = b.dataset.tipo === "youtube"
+    ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1`
+    : `https://drive.google.com/file/d/${id}/preview`;
+  videoFrame.title = b.getAttribute("aria-label") || "Video";
+  botonVideo = b;
+  visorVideo.hidden = false;
+  document.body.style.overflow = "hidden";
+  document.getElementById("videoCerrar").focus();
+}
+function cerrarVideo() {
+  if (visorVideo.hidden) return;
+  visorVideo.hidden = true;
+  videoFrame.src = "about:blank";   // corta el sonido
+  document.body.style.overflow = "";
+  botonVideo?.focus();
+}
+document.querySelectorAll(".video").forEach(b => b.addEventListener("click", () => abrirVideo(b)));
+document.getElementById("videoCerrar").addEventListener("click", cerrarVideo);
+visorVideo.addEventListener("click", e => { if (e.target === visorVideo) cerrarVideo(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarVideo(); });
+
 // Aparición suave al hacer scroll
 const aRevelar = document.querySelectorAll(".encabezado, .servicio, .sobre, .paso, .contacto-intro, .formulario");
 if ("IntersectionObserver" in window) {

@@ -1,0 +1,15 @@
+{
+  "titulo": "Momentos en movimiento",
+  "videos": [
+    {
+      "titulo": "Emilia · XV",
+      "link": "https://drive.google.com/file/d/1ptCYq776qLf1VXgwq7vBf7RPW_YYlg9w/view?usp=drivesdk",
+      "portada": "img/fotos/video-emilia-xv.jpg"
+    },
+    {
+      "titulo": "Resumen de una noche de XV",
+      "link": "https://drive.google.com/file/d/1V9c-PAQvIP5VrA8i5uPOn6l_tcxeyIlP/view?usp=drivesdk",
+      "portada": "img/fotos/video-resumen.jpg"
+    }
+  ]
+}

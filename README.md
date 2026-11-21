@@ -7,11 +7,12 @@ Todo el contenido se maneja desde el panel **https://melisasuaresph.github.io/ad
 
 - **Secciones y fotos**: crear, renombrar, ordenar o borrar secciones; subir fotos (varias a la vez), ordenarlas y elegir la foto de portada de cada una.
 - **Portada, Sobre mí y contacto**: textos y fotos de la portada y de "Sobre mí", WhatsApp e Instagram.
+- **Videos**: se pegan links de Google Drive (compartido con "Cualquier persona con el enlace") o de YouTube, con una foto de portada opcional. Los videos no se suben al repositorio.
 
 Al guardar, GitHub arma y publica la página sola en 1 o 2 minutos (pestaña *Actions* del repositorio).
 
 ## Cómo está armado
-- `contenido/secciones.json` y `contenido/sitio.json`: el contenido (lo que edita el panel).
+- `contenido/secciones.json`, `contenido/sitio.json` y `contenido/videos.json`: el contenido (lo que edita el panel).
 - `img/fotos/`: las fotos tal como se subieron.
 - `plantilla.html`, `estilos.css`, `app.js`: diseño y funcionamiento.
 - `construir.ps1`: arma la página en `_site/`. Copia cada foto sin recomprimir si mide hasta 3000 px (si es más grande la achica a 3000 px) y genera miniaturas nítidas para la grilla. Detecta solo si la foto es vertical u horizontal.

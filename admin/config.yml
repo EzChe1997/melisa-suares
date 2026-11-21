@@ -88,3 +88,27 @@ collections:
             fields:
               - { name: whatsapp, label: WhatsApp, widget: string, hint: "Con código de país, sin + ni espacios. Ej: 5491173629233" }
               - { name: instagram, label: "Usuario de Instagram (sin @)", widget: string }
+
+      - name: videos
+        label: Videos
+        file: contenido/videos.json
+        format: json
+        fields:
+          - { name: titulo, label: "Título del bloque de videos", widget: string, required: false, default: "Momentos en movimiento" }
+          - name: videos
+            label: Videos
+            label_singular: Video
+            hint: "Subí el video a Google Drive, tocá Compartir → Acceso general → 'Cualquier persona con el enlace', copiá el link y pegalo acá. También sirven links de YouTube. El orden de la lista es el orden en la página; si la dejás vacía, la página no muestra videos."
+            widget: list
+            summary: "{{fields.titulo}}"
+            fields:
+              - { name: titulo, label: Título, widget: string }
+              - name: link
+                label: "Link del video (Google Drive o YouTube)"
+                widget: string
+                pattern: ['(drive\.google\.com/(file/d/|open\?id=)|youtube\.com/|youtu\.be/)', "Tiene que ser un link de un video de Google Drive o de YouTube"]
+              - name: portada
+                label: Foto de portada
+                widget: image
+                required: false
+                hint: "Recomendado: una foto horizontal del evento. Si la dejás vacía se usa el primer cuadro del video, que en Drive suele salir negro."

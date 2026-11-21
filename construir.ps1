@@ -181,6 +181,55 @@ $sobre = $null
 if ($sobreRel) { $sobre = Get-Foto $sobreRel }
 if (-not $sobre) { $sobre = $hero }
 
+# ---------- Videos (links de Google Drive o YouTube) ----------
+function Get-Video($link) {
+  $l = ([string]$link).Trim()
+  if ($l -match 'drive\.google\.com/(?:file/d/|open\?id=|uc\?(?:[^#]*&)?id=)([A-Za-z0-9_-]{20,})') { return @{ tipo = "drive"; id = $Matches[1] } }
+  if ($l -match '(?:youtube\.com/(?:watch\?(?:[^#]*&)?v=|shorts/|embed/|live/)|youtu\.be/)([A-Za-z0-9_-]{11})') { return @{ tipo = "youtube"; id = $Matches[1] } }
+  $null
+}
+$videos = New-Object System.Text.StringBuilder
+$cantVideos = 0
+$tituloVideos = "Momentos en movimiento"
+if (Test-Path (Join-Path $raiz "contenido/videos.json")) {
+  $dv = Read-Json "contenido/videos.json"
+  if ($dv.titulo) { $tituloVideos = [string]$dv.titulo }
+  foreach ($v in @($dv.videos)) {
+    if (-not $v -or -not $v.link) { continue }
+    $vid = Get-Video $v.link
+    if (-not $vid) { Write-Warning "No reconozco el link de video: $($v.link)"; continue }
+    $poster = $null
+    $pRel = Get-RutaNormal $v.portada
+    if ($pRel) { $pf = Get-Foto $pRel; if ($pf) { $poster = "img/m/$($pf.m)" } }
+    if (-not $poster) {
+      if ($vid.tipo -eq "youtube") { $poster = "https://i.ytimg.com/vi/$($vid.id)/hqdefault.jpg" }
+      else { $poster = "https://drive.google.com/thumbnail?id=$($vid.id)&amp;sz=w1280" }
+    }
+    $t = Esc $v.titulo
+    [void]$videos.AppendLine("      <button type=""button"" class=""video"" data-tipo=""$($vid.tipo)"" data-id=""$($vid.id)"" aria-label=""Ver el video: $t"">")
+    [void]$videos.AppendLine("        <span class=""video-cuadro""><img src=""$poster"" alt="""" loading=""lazy""><span class=""video-play"" aria-hidden=""true""></span></span>")
+    [void]$videos.AppendLine("        <span class=""video-titulo"">$t</span>")
+    [void]$videos.AppendLine("      </button>")
+    $cantVideos++
+  }
+}
+$bloqueVideos = ""
+$menuVideos = ""
+if ($cantVideos -gt 0) {
+  $bloqueVideos = @"
+    <div class="videos-bloque" id="videos">
+      <div class="encabezado">
+        <p class="sobretitulo">Video</p>
+        <h2>$(Esc $tituloVideos)</h2>
+      </div>
+      <div class="videos">
+$($videos.ToString().TrimEnd())
+      </div>
+    </div>
+"@
+  $menuVideos = "<a href=""#videos"">Videos</a>"
+}
+
 $parrafos = New-Object System.Text.StringBuilder
 foreach ($p in ([regex]::Split([string]$sitio.sobre_mi.texto, '\r?\n\s*\r?\n'))) {
   $t = $p.Trim()
@@ -210,6 +259,8 @@ $reemplazos = [ordered]@{
   "{{SERVICIOS}}"            = $servicios.ToString().TrimEnd()
   "{{FILTROS}}"              = $filtros.ToString().TrimEnd()
   "{{GALERIA}}"              = $galeria.ToString().TrimEnd()
+  "{{VIDEOS}}"               = $bloqueVideos
+  "{{MENU_VIDEOS}}"          = $menuVideos
   "{{SOBRE_FOTO}}"           = "img/g/$($sobre.g)"
   "{{SOBRE_TITULO}}"         = (Esc $sitio.sobre_mi.titulo)
   "{{SOBRE_TEXTO}}"          = $parrafos.ToString().TrimEnd()
@@ -244,4 +295,4 @@ $mapa = "<?xml version=`"1.0`" encoding=`"UTF-8`"?>`n<urlset xmlns=`"http://www.
 
 $total = 0
 foreach ($l in $listas) { $total += $l.fotos.Count }
-Write-Host "Listo: $($listas.Count) secciones, $total fotos en la galeria -> $Salida/index.html"
+Write-Host "Listo: $($listas.Count) secciones, $total fotos en la galeria, $cantVideos videos -> $Salida/index.html"
