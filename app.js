@@ -112,6 +112,13 @@ if (TELEFONO_WHATSAPP) {
 const form = document.getElementById("formulario");
 const aviso = document.getElementById("aviso");
 
+// La fecha del evento no puede ser anterior a hoy (fecha local, no UTC)
+function hoyISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+form.elements.fecha.min = hoyISO();
+
 function formatearFecha(valor) {
   if (!valor) return "";
   const [a, m, d] = valor.split("-");
@@ -132,6 +139,13 @@ form.addEventListener("submit", async e => {
     faltan.forEach(el => el.classList.add("invalido"));
     faltan[0].focus();
     aviso.textContent = "Completá tu nombre y el tipo de evento.";
+    return;
+  }
+  const fecha = datos.get("fecha");
+  if (fecha && fecha < hoyISO()) {
+    form.elements.fecha.classList.add("invalido");
+    form.elements.fecha.focus();
+    aviso.textContent = "Esa fecha ya pasó. Elegí la fecha de tu evento.";
     return;
   }
 
