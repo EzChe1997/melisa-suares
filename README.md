@@ -1,16 +1,25 @@
 # Melisa Suares · Fotografía y Video
 
-Página web estática (HTML + CSS + JS, sin dependencias).
+Página: https://ezche1997.github.io/melisa-suares/
 
-- `index.html`: contenido (servicios, portfolio, sobre mí, contacto)
-- `estilos.css`: diseño
-- `app.js`: menú, filtros, visor de fotos y formulario a WhatsApp (el número está arriba de todo)
-- `img/full`: fotos grandes (visor) · `img/thumb`: miniaturas (700 px)
+## Cómo se edita
+Todo el contenido se maneja desde **Pages CMS** (https://app.pagescms.org), entrando con la cuenta de GitHub:
 
-## Agregar una foto al portfolio
-1. Copiar la foto grande a `img/full/nombre.jpg` y una versión de 700 px a `img/thumb/nombre.jpg`.
-2. Agregar una línea `<figure ...>` dentro de `<div class="galeria">` en `index.html`.
-   `data-cat` puede ser: casamiento, 15, aniversario, cumple, egresados, baile.
-   Si la foto es vertical, agregar `class="alta"`.
+- **Secciones y fotos**: crear, renombrar, ordenar o borrar secciones; subir fotos (varias a la vez), ordenarlas y elegir la foto de portada de cada una.
+- **Portada, Sobre mí y contacto**: textos y fotos de la portada y de "Sobre mí", WhatsApp e Instagram.
 
-Se publica sola con GitHub Pages al hacer push a `main`.
+Al guardar, GitHub arma y publica la página sola en 1 o 2 minutos (pestaña *Actions* del repositorio).
+
+## Cómo está armado
+- `contenido/secciones.json` y `contenido/sitio.json`: el contenido (lo que edita Pages CMS).
+- `img/fotos/`: las fotos tal como se subieron.
+- `plantilla.html`, `estilos.css`, `app.js`: diseño y funcionamiento.
+- `construir.ps1`: arma la página en `_site/`. Copia cada foto sin recomprimir si mide hasta 3000 px (si es más grande la achica a 3000 px) y genera miniaturas nítidas para la grilla. Detecta solo si la foto es vertical u horizontal.
+- `.github/workflows/publicar.yml`: corre `construir.ps1` y publica en GitHub Pages en cada cambio.
+- `.pages.yml`: los formularios del panel de Pages CMS.
+
+## Probar en la PC
+```
+powershell -ExecutionPolicy Bypass -File construir.ps1
+```
+y abrir `_site/index.html`. Necesita ffmpeg instalado.

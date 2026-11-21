@@ -1,4 +1,5 @@
 # Fotos originales descargadas (no se publican)
-fotos/
-_captura.html
-_t.*
+/fotos/
+# Generado por construir.ps1
+/_site/
+/.cache-img/

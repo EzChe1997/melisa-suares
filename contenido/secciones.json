@@ -1,0 +1,83 @@
+{
+  "secciones": [
+    {
+      "titulo": "Casamientos",
+      "subtitulo": "Civil, ceremonia y fiesta",
+      "portada": "img/fotos/casamiento-06.jpg",
+      "fotos": [
+        "img/fotos/casamiento-07.jpg",
+        "img/fotos/casamiento-03.jpg",
+        "img/fotos/casamiento-06.jpg",
+        "img/fotos/casamiento-05.jpg",
+        "img/fotos/casamiento-12.jpg",
+        "img/fotos/casamiento-09.jpg",
+        "img/fotos/casamiento-10.jpg",
+        "img/fotos/casamiento-01.jpg",
+        "img/fotos/casamiento-08.jpg",
+        "img/fotos/casamiento-04.jpg"
+      ]
+    },
+    {
+      "titulo": "15 años y books",
+      "subtitulo": "Sesión previa y fiesta",
+      "portada": "img/fotos/15-04.jpg",
+      "fotos": [
+        "img/fotos/15-04.jpg",
+        "img/fotos/15-06.jpg",
+        "img/fotos/book-03.jpg",
+        "img/fotos/book-04.jpg",
+        "img/fotos/15-02.jpg",
+        "img/fotos/15-05.jpg",
+        "img/fotos/book-02.jpg",
+        "img/fotos/book-05.jpg",
+        "img/fotos/15-01.jpg",
+        "img/fotos/15-07.jpg",
+        "img/fotos/book-06.jpg",
+        "img/fotos/book-01.jpg"
+      ]
+    },
+    {
+      "titulo": "Aniversarios",
+      "subtitulo": "Bodas de plata, de oro y más",
+      "portada": "img/fotos/aniversario-02.jpg",
+      "fotos": [
+        "img/fotos/aniversario-02.jpg",
+        "img/fotos/aniversario-03.jpg",
+        "img/fotos/aniversario-01.jpg",
+        "img/fotos/aniversario-04.jpg"
+      ]
+    },
+    {
+      "titulo": "Cumpleaños",
+      "subtitulo": "Todas las edades",
+      "portada": "img/fotos/cumple-03.jpg",
+      "fotos": [
+        "img/fotos/cumple-03.jpg",
+        "img/fotos/cumple-01.jpg",
+        "img/fotos/cumple-05.jpg",
+        "img/fotos/cumple-02.jpg",
+        "img/fotos/cumple-04.jpg"
+      ]
+    },
+    {
+      "titulo": "Egresados",
+      "subtitulo": "Fiestas y cenas de egreso",
+      "portada": "img/fotos/egresados-02.jpg",
+      "fotos": [
+        "img/fotos/egresados-02.jpg",
+        "img/fotos/egresados-01.jpg",
+        "img/fotos/egresados-03.jpg"
+      ]
+    },
+    {
+      "titulo": "Shows y baile",
+      "subtitulo": "Eventos de salsa, bachata y más",
+      "portada": "img/fotos/baile-03.jpg",
+      "fotos": [
+        "img/fotos/baile-03.jpg",
+        "img/fotos/baile-01.jpg",
+        "img/fotos/baile-02.jpg"
+      ]
+    }
+  ]
+}

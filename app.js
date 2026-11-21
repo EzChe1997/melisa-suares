@@ -1,13 +1,7 @@
-// ===== CONFIGURACIÓN =====
-// Si cargás el número de WhatsApp de Melisa (con código de país, sin + ni espacios,
-// ej: "5491123456789"), el formulario abre el chat con el mensaje ya escrito.
-// Si queda vacío, usa el link de WhatsApp de su Instagram y copia el mensaje
-// para que la persona lo pegue.
-const TELEFONO_WHATSAPP = "5491173629233";
+// El número de WhatsApp sale de contenido/sitio.json (lo pone construir.ps1 en <body data-whatsapp>).
+// Si quedara vacío, se usa el link de WhatsApp de su Instagram y se copia el mensaje.
+const TELEFONO_WHATSAPP = document.body.dataset.whatsapp || "";
 const LINK_WHATSAPP = "https://wa.me/message/Y2NBHGEVJX2MA1";
-// ==========================
-
-document.getElementById("anio").textContent = new Date().getFullYear();
 
 // Barra superior: se vuelve sólida al bajar
 const barra = document.getElementById("barra");

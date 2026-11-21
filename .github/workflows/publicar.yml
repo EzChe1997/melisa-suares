@@ -1,0 +1,51 @@
+# Cada vez que cambia algo en main (por ejemplo, Melisa sube fotos desde Pages CMS),
+# arma la pagina con construir.ps1 y la publica en GitHub Pages.
+name: Publicar pagina
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+
+      - name: Recuperar fotos ya procesadas
+        uses: actions/cache@v4
+        with:
+          path: .cache-img
+          key: fotos-${{ hashFiles('img/fotos/**') }}
+          restore-keys: fotos-
+
+      - name: Armar la pagina
+        shell: pwsh
+        run: ./construir.ps1
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

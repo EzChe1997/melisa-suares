@@ -1,0 +1,23 @@
+{
+  "portada": {
+    "foto": "img/fotos/15-01.jpg",
+    "descripcion_foto": "Quinceañera con vestido azul posando junto a una cabina telefónica roja",
+    "sobretitulo": "Fotografía & Video · Buenos Aires",
+    "titulo": "Tu evento, contado",
+    "titulo_destacado": "como lo viviste",
+    "subtitulo": "Casamientos, 15 años, cumpleaños, egresados y eventos sociales."
+  },
+  "sobre_mi": {
+    "foto": "img/fotos/melisa.jpg",
+    "titulo": "Hola, soy Melisa",
+    "texto": "Soy fotógrafa y videógrafa en Buenos Aires. Me encanta estar en los momentos que no se repiten: los nervios de antes de entrar, el abrazo de la familia, la pista llena a las tres de la mañana.\n\nTrabajo de forma tranquila y cercana, para que te olvides de la cámara y disfrutes tu fiesta. Después, vos te quedás con las fotos para revivirla todas las veces que quieras."
+  },
+  "otros_eventos": {
+    "titulo": "Bautismos y eventos sociales",
+    "texto": "Contame qué estás organizando y lo armamos juntos."
+  },
+  "contacto": {
+    "whatsapp": "5491173629233",
+    "instagram": "phmelisasuares"
+  }
+}
