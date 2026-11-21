@@ -364,3 +364,8 @@ em { font-style: italic; color: var(--dorado); }
   html { scroll-behavior: auto; }
   .revelar { opacity: 1; transform: none; }
 }
+
+/* El icono de "scroll con mouse" solo tiene sentido en PC */
+@media (hover: none), (max-width: 760px) {
+  .hero-bajar { display: none; }
+}
