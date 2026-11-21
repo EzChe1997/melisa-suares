@@ -48,22 +48,81 @@ const visorImg = document.getElementById("visorImg");
 const visorCuenta = document.getElementById("visorCuenta");
 let visibles = [];
 let actual = 0;
+let turno = 0;          // para ignorar animaciones viejas si se pasa rápido de foto
+let arrastreX = 0;      // cuánto se arrastró la foto con el dedo
+const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const DESPLAZAMIENTO = 70;
 
-function mostrar(i) {
+function urlGrande(i) {
+  return visibles[(i + visibles.length) % visibles.length].querySelector("img").dataset.full;
+}
+function precargar(url) {
+  return new Promise(listo => {
+    const p = new Image();
+    p.onload = p.onerror = () => listo();
+    p.src = url;
+  });
+}
+
+// dir: 1 = siguiente (entra desde la derecha), -1 = anterior, 0 = sin animación de paso
+function mostrar(i, dir = 0) {
   actual = (i + visibles.length) % visibles.length;
   const img = visibles[actual].querySelector("img");
-  visorImg.src = img.dataset.full;
-  visorImg.alt = img.alt;
+  const url = img.dataset.full;
+  const miTurno = ++turno;
   visorCuenta.textContent = `${actual + 1} / ${visibles.length}`;
-  // precargar la siguiente
-  const sig = visibles[(actual + 1) % visibles.length].querySelector("img");
-  new Image().src = sig.dataset.full;
+  // precargar las vecinas para que el paso sea instantáneo
+  precargar(urlGrande(actual + 1));
+  precargar(urlGrande(actual - 1));
+
+  if (!dir || sinMovimiento || !visorImg.animate) {
+    visorImg.getAnimations?.().forEach(a => a.cancel());
+    visorImg.style.transform = "";
+    visorImg.src = url;
+    visorImg.alt = img.alt;
+    arrastreX = 0;
+    return;
+  }
+
+  visorImg.getAnimations().forEach(a => a.cancel());
+  const salida = visorImg.animate(
+    [
+      { transform: `translateX(${arrastreX}px)`, opacity: 1 },
+      { transform: `translateX(${-dir * DESPLAZAMIENTO + Math.min(0, arrastreX * 0.3)}px)`, opacity: 0 }
+    ],
+    { duration: 170, easing: "ease-in", fill: "forwards" }
+  );
+  visorImg.style.transform = "";
+  arrastreX = 0;
+
+  const finSalida = new Promise(listo => setTimeout(listo, 170));
+  Promise.all([finSalida, precargar(url)]).then(async () => {
+    if (miTurno !== turno) return;
+    visorImg.src = url;
+    visorImg.alt = img.alt;
+    try { await visorImg.decode(); } catch (_) {}
+    if (miTurno !== turno) return;
+    salida.cancel();
+    visorImg.animate(
+      [
+        { transform: `translateX(${dir * DESPLAZAMIENTO}px)`, opacity: 0 },
+        { transform: "translateX(0)", opacity: 1 }
+      ],
+      { duration: 280, easing: "cubic-bezier(.2,.7,.2,1)" }
+    );
+  });
 }
 function abrirVisor(fig) {
   visibles = figuras.filter(f => !f.hidden);
   visor.hidden = false;
   document.body.style.overflow = "hidden";
   mostrar(visibles.indexOf(fig));
+  if (!sinMovimiento && visorImg.animate) {
+    visorImg.animate(
+      [{ transform: "scale(.96)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }],
+      { duration: 320, easing: "cubic-bezier(.2,.7,.2,1)" }
+    );
+  }
   document.getElementById("visorCerrar").focus();
 }
 function cerrarVisor() {
@@ -72,23 +131,51 @@ function cerrarVisor() {
 }
 figuras.forEach(f => f.addEventListener("click", () => abrirVisor(f)));
 document.getElementById("visorCerrar").addEventListener("click", cerrarVisor);
-document.getElementById("visorAnt").addEventListener("click", e => { e.stopPropagation(); mostrar(actual - 1); });
-document.getElementById("visorSig").addEventListener("click", e => { e.stopPropagation(); mostrar(actual + 1); });
+document.getElementById("visorAnt").addEventListener("click", e => { e.stopPropagation(); mostrar(actual - 1, -1); });
+document.getElementById("visorSig").addEventListener("click", e => { e.stopPropagation(); mostrar(actual + 1, 1); });
 visor.addEventListener("click", e => { if (e.target === visor) cerrarVisor(); });
 document.addEventListener("keydown", e => {
   if (visor.hidden) return;
   if (e.key === "Escape") cerrarVisor();
-  if (e.key === "ArrowLeft") mostrar(actual - 1);
-  if (e.key === "ArrowRight") mostrar(actual + 1);
+  if (e.key === "ArrowLeft") mostrar(actual - 1, -1);
+  if (e.key === "ArrowRight") mostrar(actual + 1, 1);
 });
-// Deslizar con el dedo en el celular
-let toqueX = null;
-visor.addEventListener("touchstart", e => { toqueX = e.touches[0].clientX; }, { passive: true });
-visor.addEventListener("touchend", e => {
+// Deslizar con el dedo en el celular: la foto sigue al dedo
+let toqueX = null, toqueY = null, horizontal = null;
+visor.addEventListener("touchstart", e => {
+  toqueX = e.touches[0].clientX;
+  toqueY = e.touches[0].clientY;
+  horizontal = null;
+  arrastreX = 0;
+  visorImg.getAnimations?.().forEach(a => a.cancel());
+}, { passive: true });
+visor.addEventListener("touchmove", e => {
   if (toqueX === null) return;
-  const dx = e.changedTouches[0].clientX - toqueX;
-  if (Math.abs(dx) > 50) mostrar(actual + (dx < 0 ? 1 : -1));
+  const dx = e.touches[0].clientX - toqueX;
+  const dy = e.touches[0].clientY - toqueY;
+  if (horizontal === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) horizontal = Math.abs(dx) > Math.abs(dy);
+  if (!horizontal) return;
+  arrastreX = dx;
+  visorImg.style.transform = `translateX(${dx}px)`;
+  visorImg.style.opacity = String(1 - Math.min(Math.abs(dx) / 600, 0.4));
+}, { passive: true });
+visor.addEventListener("touchend", () => {
+  if (toqueX === null) return;
   toqueX = null;
+  visorImg.style.opacity = "";
+  if (horizontal && Math.abs(arrastreX) > 60) {
+    const dir = arrastreX < 0 ? 1 : -1;
+    mostrar(actual + dir, dir);
+  } else if (arrastreX) {
+    // arrastre corto: la foto vuelve a su lugar
+    const desde = arrastreX;
+    arrastreX = 0;
+    visorImg.style.transform = "";
+    if (visorImg.animate && !sinMovimiento) {
+      visorImg.animate([{ transform: `translateX(${desde}px)` }, { transform: "translateX(0)" }],
+        { duration: 220, easing: "cubic-bezier(.2,.7,.2,1)" });
+    }
+  }
 });
 
 // Aparición suave al hacer scroll
