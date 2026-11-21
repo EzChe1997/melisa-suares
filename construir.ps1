@@ -224,7 +224,7 @@ foreach ($k in $reemplazos.Keys) { $html = $html.Replace($k, [string]$reemplazos
 if ($html -match '\{\{[A-Z_]+\}\}') { throw "Quedo un marcador sin reemplazar: $($Matches[0])" }
 
 # ---------- Salida ----------
-if (Test-Path $Salida) { Remove-Item -Recurse -Force $Salida }
+if (Test-Path $Salida) { Get-ChildItem -LiteralPath $Salida -Force | Remove-Item -Recurse -Force }
 foreach ($d in @("$Salida/img/g", "$Salida/img/m")) { New-Item -ItemType Directory -Force -Path $d | Out-Null }
 [IO.File]::WriteAllText((Join-Path $raiz "$Salida/index.html"), $html, $utf8)
 Copy-Item estilos.css, app.js -Destination $Salida

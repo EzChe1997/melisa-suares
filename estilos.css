@@ -283,14 +283,16 @@ em { font-style: italic; color: var(--dorado); }
 /* ---------- WhatsApp flotante ---------- */
 .wa-flotante {
   position: fixed; right: 18px; bottom: 18px; z-index: 40;
-  width: 56px; height: 56px; border-radius: 50%;
-  background: #25d366; color: #fff;
+  width: 54px; height: 54px; border-radius: 50%;
+  background: rgba(20, 17, 15, .88); color: var(--dorado);
+  border: 1px solid rgba(212, 176, 122, .55);
+  backdrop-filter: blur(6px);
   display: grid; place-items: center;
-  box-shadow: 0 6px 20px rgba(0,0,0,.35);
-  transition: transform .25s;
+  box-shadow: 0 6px 22px rgba(0,0,0,.45);
+  transition: transform .25s, background .25s, color .25s, border-color .25s;
 }
-.wa-flotante:hover { transform: scale(1.08); }
-.wa-flotante svg { width: 30px; height: 30px; }
+.wa-flotante:hover { transform: translateY(-2px); background: var(--dorado); color: #1a140e; border-color: var(--dorado); }
+.wa-flotante svg { width: 26px; height: 26px; }
 
 /* ---------- Visor ---------- */
 .visor {
