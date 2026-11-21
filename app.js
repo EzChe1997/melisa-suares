@@ -50,6 +50,8 @@ let visibles = [];
 let actual = 0;
 let turno = 0;          // para ignorar animaciones viejas si se pasa rápido de foto
 let arrastreX = 0;      // cuánto se arrastró la foto con el dedo
+let saliendo = false;   // hay una foto animándose hacia afuera
+let ultimaDir = 1;
 const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const DESPLAZAMIENTO = 70;
 
@@ -69,13 +71,15 @@ function mostrar(i, dir = 0) {
   actual = (i + visibles.length) % visibles.length;
   const img = visibles[actual].querySelector("img");
   const url = img.dataset.full;
-  const miTurno = ++turno;
+  const miTurno = turno;
   visorCuenta.textContent = `${actual + 1} / ${visibles.length}`;
   // precargar las vecinas para que el paso sea instantáneo
   precargar(urlGrande(actual + 1));
   precargar(urlGrande(actual - 1));
 
   if (!dir || sinMovimiento || !visorImg.animate) {
+    saliendo = false;
+    turno++;
     visorImg.getAnimations?.().forEach(a => a.cancel());
     visorImg.style.transform = "";
     visorImg.src = url;
@@ -84,10 +88,19 @@ function mostrar(i, dir = 0) {
     return;
   }
 
+  ultimaDir = dir;
+  // Si la foto ya está saliendo, no repetir la animación: al terminar entra la última foto elegida
+  if (saliendo) return;
+  saliendo = true;
+
+  // arrancar la salida desde donde esté la foto (por si estaba entrando)
+  const cs = getComputedStyle(visorImg);
+  const desdeTr = arrastreX ? `translateX(${arrastreX}px)` : (cs.transform === "none" ? "translateX(0)" : cs.transform);
+  const desdeOp = cs.opacity;
   visorImg.getAnimations().forEach(a => a.cancel());
   const salida = visorImg.animate(
     [
-      { transform: `translateX(${arrastreX}px)`, opacity: 1 },
+      { transform: desdeTr, opacity: desdeOp },
       { transform: `translateX(${-dir * DESPLAZAMIENTO + Math.min(0, arrastreX * 0.3)}px)`, opacity: 0 }
     ],
     { duration: 170, easing: "ease-in", fill: "forwards" }
@@ -95,22 +108,32 @@ function mostrar(i, dir = 0) {
   visorImg.style.transform = "";
   arrastreX = 0;
 
-  const finSalida = new Promise(listo => setTimeout(listo, 170));
-  Promise.all([finSalida, precargar(url)]).then(async () => {
-    if (miTurno !== turno) return;
-    visorImg.src = url;
-    visorImg.alt = img.alt;
-    try { await visorImg.decode(); } catch (_) {}
-    if (miTurno !== turno) return;
+  setTimeout(async () => {
+    // esperar a que cargue la foto elegida (si se siguió clickeando, la última)
+    let objetivo;
+    do {
+      objetivo = actual;
+      await precargar(urlGrande(objetivo));
+      if (miTurno !== turno || !saliendo) return;
+      if (objetivo !== actual) continue;
+      const fig = visibles[objetivo].querySelector("img");
+      visorImg.src = fig.dataset.full;
+      visorImg.alt = fig.alt;
+      // decode() puede tardar o colgarse en algunos navegadores: no esperar más de 250 ms
+      await Promise.race([visorImg.decode().catch(() => {}), new Promise(s => setTimeout(s, 250))]);
+      if (miTurno !== turno || !saliendo) return;
+    } while (objetivo !== actual);
+    saliendo = false;
+    turno++;
     salida.cancel();
     visorImg.animate(
       [
-        { transform: `translateX(${dir * DESPLAZAMIENTO}px)`, opacity: 0 },
+        { transform: `translateX(${ultimaDir * DESPLAZAMIENTO}px)`, opacity: 0 },
         { transform: "translateX(0)", opacity: 1 }
       ],
       { duration: 280, easing: "cubic-bezier(.2,.7,.2,1)" }
     );
-  });
+  }, 170);
 }
 function abrirVisor(fig) {
   visibles = figuras.filter(f => !f.hidden);
