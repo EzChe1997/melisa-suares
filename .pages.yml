@@ -30,7 +30,7 @@ content:
             type: image
           - name: fotos
             label: Fotos
-            description: "Podés subir varias juntas y arrastrarlas para cambiar el orden. Ideal: exportadas a unos 3000 px del lado largo, calidad 90 (pesan 1 a 3 MB). Las más grandes se achican solas."
+            description: "Podés subir varias juntas y arrastrarlas para cambiar el orden. Cada foto tiene que pesar MENOS DE 4 MB: exportalas a 3000 px del lado largo, calidad 85-90. Si alguna pesa más, subila desde GitHub (img/fotos → Add file → Upload files) y después elegila acá."
             type: image
             options:
               multiple: true
