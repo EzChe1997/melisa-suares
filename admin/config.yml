@@ -1,7 +1,7 @@
-# Panel de edición (Sveltia CMS). Se abre en https://ezche1997.github.io/melisa-suares/admin/
+# Panel de edición (Sveltia CMS). Se abre en https://melisasuares.github.io/admin/
 backend:
   name: github
-  repo: EzChe1997/melisa-suares
+  repo: melisasuares/melisasuares.github.io
   branch: main
   commit_messages:
     update: "Actualizar {{path}} (desde el panel)"

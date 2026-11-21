@@ -1,6 +1,6 @@
 # Melisa Suares · Fotografía y Video
 
-Página: https://ezche1997.github.io/melisa-suares/
+Página: https://melisasuares.github.io/
 
 ## Cómo se edita
 Todo el contenido se maneja desde **Pages CMS** (https://app.pagescms.org), entrando con la cuenta de GitHub:
